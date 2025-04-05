@@ -14,7 +14,7 @@ category = "Social Network"
 [bundle.macos]
 minimum_system_version = "10.14"
 resources = ["icons"]
-files = { dioxus_hello = "target/release/dioxus_hello" }
+files = { dioxus_hello = "target/release/hello" }
 hardened_runtime = true
 
 
