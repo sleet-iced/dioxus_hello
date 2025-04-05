@@ -3,7 +3,7 @@
 use dioxus::prelude::*;
 
 mod app;
-use app::App as MainApp;
+use app::MainApp as MainApp;
 
 
 const MAIN_CSS: Asset = asset!("src/css/main.css");
