@@ -12,7 +12,8 @@ body {
   background-color: var(--bg-light);
   color: var(--text-light);
   font-family: 'Ubuntu', 'Segoe UI', sans-serif;
-  margin: 20px;
+  margin: 0px;
+  padding: 0px;
 }
 
 /* Dark mode */
