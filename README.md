@@ -8,14 +8,14 @@
 serve
 ```bash
 dx serve # the default platform is desktop
-dx serve --platform web
+# dx serve --platform web
 dx serve --platform desktop
 ```
 
 bundle
 ```sh
 # bundle for web
-dx bundle --platform web
+# dx bundle --platform web
 # bundle for macOS
 dx build --release --platform desktop
 
