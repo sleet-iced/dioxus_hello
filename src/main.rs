@@ -10,9 +10,9 @@ enum Route {
     Blog { id: i32 },
 }
 
-const FAVICON: Asset = asset!("/assets/favicon.ico");
-const MAIN_CSS: Asset = asset!("/assets/main.css");
-const HEADER_SVG: Asset = asset!("/assets/header.svg");
+const FAVICON: Asset = asset!("src/img/favicon.ico");
+const MAIN_CSS: Asset = asset!("src/css/main.css");
+const HEADER_SVG: Asset = asset!("src/img/header.svg");
 
 fn main() {
     dioxus::launch(App);
