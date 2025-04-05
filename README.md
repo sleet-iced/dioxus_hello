@@ -20,6 +20,14 @@ dx bundle --platform web
 dx build --release --platform desktop
 ```
 
+```bash
+# CARGO COMMANDS
+cargo run
+cargo check
+cargo test
+cargo clean
+```
+
 ---
 
 
