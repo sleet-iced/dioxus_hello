@@ -10,7 +10,7 @@ enum Route {
     Blog { id: i32 },
 }
 
-const FAVICON: Asset = asset!("src/img/favicon.ico");
+const FAVICON: Asset = asset!("src/img/sleet_code_icon_trans.png");
 const MAIN_CSS: Asset = asset!("src/css/main.css");
 const HEADER_SVG: Asset = asset!("src/img/header.svg");
 
