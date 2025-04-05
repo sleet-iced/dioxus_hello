@@ -18,6 +18,10 @@ bundle
 dx bundle --platform web
 # bundle for macOS
 dx build --release --platform desktop
+
+dx bundle --platform desktop \
+    --package-types "macos" \
+    --package-types "dmg"
 ```
 
 ```bash

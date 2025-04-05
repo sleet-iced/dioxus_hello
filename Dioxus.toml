@@ -1,9 +1,27 @@
+# ❄️
+# bundle
 [application]
+name = "dioxus hello"
+
+[bundle]
+identifier = "app.graupel.dioxus_hello"
+publisher = "sleet.near"
+icon = ["icons/icon.png"]
+short_description = "a hello dioxus project by sleet for interacting with a hello contract on near"
+copyright = "copyright 2025 by sleet.near"
+category = "Social Network"
+
+[bundle.macos]
+minimum_system_version = "10.14"
+resources = ["icons"]
+files = { dioxus_hello = "target/release/dioxus_hello" }
+hardened_runtime = true
+
 
 [web.app]
 
 # HTML title tag content
-title = "dioxus_hello"
+title = "dioxus hello"
 
 # include `assets` in web platform
 [web.resource]
