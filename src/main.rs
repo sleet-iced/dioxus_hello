@@ -10,7 +10,7 @@ const MAIN_CSS: Asset = asset!("src/css/main.css");
 const FAVICON: Asset = asset!("src/img/sleet_code_icon_trans.png");
 
 
-#[cfg(not(feature = "web"))]
+
 pub fn main() {
     dioxus::launch(App);
 }
