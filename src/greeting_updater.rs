@@ -138,36 +138,37 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                     class: "update-button",
                     disabled: new_greeting().is_empty() || selected_account.is_none(),
                     onclick: move |_| {
-                        let cloned_account = selected_account.clone();
-                        spawn(async move {
-                            if let Some(account) = cloned_account.as_ref() {
-                                transaction_status.set(Some("Preparing transaction...".to_string()));
-                                let config = if network {
-                                    toml::from_str::<toml::Value>(include_str!("network_config.toml"))
-                                        .unwrap()["mainnet"].clone()
-                                } else {
-                                    toml::from_str::<toml::Value>(include_str!("network_config.toml"))
-                                        .unwrap()["testnet"].clone()
-                                };
-                                let contract_id = config["contract_id"].as_str().unwrap();
-
-                                to_owned![new_greeting, transaction_status];
-                                match submit_transaction(
-                                    network,
-                                    &new_greeting(),
-                                    account,
-                                ).await {
-                                    Ok(_) => {
-                                        transaction_status.set(Some("Transaction successful!".to_string()));
-                                    }
-                                    Err(e) => {
-                                        transaction_status.set(Some(format!("Transaction failed: {}", e)));
-                                    }
-                                }
+                        if let Some(account) = selected_account.as_ref() {
+                            transaction_status.set(Some("Preparing transaction...".to_string()));
+                            let config = if network {
+                                toml::from_str::<toml::Value>(include_str!("network_config.toml"))
+                                    .unwrap()["mainnet"].clone()
                             } else {
-                                transaction_status.set(Some("Please select an account first".to_string()));
+                                toml::from_str::<toml::Value>(include_str!("network_config.toml"))
+                                    .unwrap()["testnet"].clone()
+                            };
+                            let contract_id = config["contract_id"].as_str().unwrap().to_string();
+
+                            to_owned![new_greeting, transaction_status];
+                            let value = selected_account.clone();
+                            spawn(async move {
+                            let cloned_account = value.clone();
+                            match submit_transaction(
+                            network,
+                            &contract_id,
+                            cloned_account.as_ref().unwrap(),
+                            ).await {
+                                Ok(_) => {
+                                    transaction_status.set(Some("Transaction successful!".to_string()));
+                                }
+                                Err(e) => {
+                                    transaction_status.set(Some(format!("Transaction failed: {}", e)));
+                                }
                             }
-                        });
+                            });
+                        } else {
+                            transaction_status.set(Some("Please select an account first".to_string()));
+                        }
                     },
                     "Update Greeting"
                 }
