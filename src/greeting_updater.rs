@@ -130,7 +130,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
             network: network_name.to_string(),
             contract_id: contract_id.to_string(),
             method_name: "set_greeting".to_string(),
-            args: format!("{{\"greeting\":\"{}\"}}", new_greeting()),
+            args: format!("{{\"{}\": \"{}\"}}", "greeting", new_greeting()),
             gas: "30 TGas".to_string(),
             deposit: "0 NEAR".to_string(),
         }));
@@ -192,14 +192,14 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
             }
 
             div { class: "transaction-preview",
-                if let Some(status) = transaction_status().as_ref() {
+                h3 { "Transaction Preview" }
+                { transaction_status().map(|status| rsx!(
                     div { class: "preview-item status",
                         span { class: "label", "Status: " }
                         span { class: "value", "{status}" }
                     }
-                }
-                h3 { "Transaction Preview" }
-                if let Some(preview) = transaction_preview() {
+                )) }
+                { transaction_preview().map(|preview| rsx!(
                     div { class: "preview-content",
                         div { class: "preview-item",
                             span { class: "label", "Network: " }
@@ -226,7 +226,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                             span { class: "value", "{preview.deposit}" }
                         }
                     }
-                }
+                )) }
             }
         }
     }
