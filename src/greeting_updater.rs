@@ -126,7 +126,11 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
         link { rel: "stylesheet", href: GREETING_UPDATER_CSS }
         div { class: "greeting-updater",
             h2 { "Update Greeting" }
-            AccountSelector { network: network, onselect: move |account: String| selected_account.set(Some(NearCredential { account_id: account, public_key: String::new(), network: network.to_string(), private_key: None })) }
+            AccountSelector { network: network, onselect: move |account: String| {
+                if let Some(credential) = load_near_credentials().into_iter().find(|cred| cred.account_id == account) {
+                    selected_account.set(Some(credential));
+                }
+            } }
             div { class: "input-group",
                 input {
                     class: "greeting-input",
