@@ -54,10 +54,10 @@ pub fn GreetingViewer(network: bool) -> Element {
             let query = QueryRequest::CallFunction {
                 account_id,
                 method_name: "get_greeting".to_string(),
-                args: args.to_string().into_bytes(),
+                args: args.to_string().into_bytes().into(),
             };
 
-            match client.query(query).await {
+            match client.call(query).await {
                 Ok(response) => {
                     if let QueryResponseKind::CallResult(FunctionResult { result, .. }) = response.kind {
                         match serde_json::from_slice::<GreetingResponse>(&result) {
@@ -77,7 +77,7 @@ pub fn GreetingViewer(network: bool) -> Element {
             }
 
             loading.set(false);
-        }
+        });
     });
 
     rsx! {

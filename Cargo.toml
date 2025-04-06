@@ -11,9 +11,9 @@ dioxus = { version = "0.6.0", features = ["desktop", "router"] }
 dirs = "5.0.1"
 serde = { version = "1.0.188", features = ["derive"] }
 serde_json = "1.0.107"
-near-jsonrpc-client = { version = "0.4.0-beta.0" }
-near-primitives = "0.19.0"
-near-jsonrpc-primitives = "0.19.0"
+near-primitives = "0.29.1"
+near-jsonrpc-client = "0.16.0"
+near-jsonrpc-primitives = "0.29.1"
 base64 = "0.21.4"
 toml = "0.8.2"
 
