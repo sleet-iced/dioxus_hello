@@ -32,7 +32,10 @@ pub fn GreetingUpdater(network: bool) -> Element {
             network: network_name.to_string(),
             contract_id: contract_id.to_string(),
             method_name: "set_greeting".to_string(),
-            args: format!("{{\"greeting\":\
+            args: format!("{{\"greeting\":\"{}\"}}", new_greeting()),
+            gas: "30 TGas".to_string(),
+            deposit: "0 NEAR".to_string(),
+        }));
     };
 
     rsx! {
