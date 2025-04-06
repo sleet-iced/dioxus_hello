@@ -138,7 +138,9 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                     class: "update-button",
                     disabled: new_greeting().is_empty() || selected_account.is_none(),
                     onclick: move |_| {
-                        if let Some(account) = selected_account.as_ref() {
+                        let selected_account = selected_account.clone();
+                        let account = selected_account.clone();
+                        if let Some(account) = account.as_ref() {
                             transaction_status.set(Some("Preparing transaction...".to_string()));
                             let config = if network {
                                 toml::from_str::<toml::Value>(include_str!("network_config.toml"))
@@ -150,13 +152,12 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                             let contract_id = config["contract_id"].as_str().unwrap().to_string();
 
                             to_owned![new_greeting, transaction_status];
-                            let value = selected_account.clone();
+                            let cloned_account = account.clone();
                             spawn(async move {
-                            let cloned_account = value.clone();
                             match submit_transaction(
-                            network,
-                            &contract_id,
-                            cloned_account.as_ref().unwrap(),
+                                network,
+                                &new_greeting(),
+                                &cloned_account,
                             ).await {
                                 Ok(_) => {
                                     transaction_status.set(Some("Transaction successful!".to_string()));
