@@ -2,8 +2,10 @@ use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use near_jsonrpc_client::{JsonRpcClient, methods};
 use near_primitives::types::AccountId;
-use near_primitives::transaction::{Action, TransactionV0 as Transaction, FunctionCallAction};
+use near_primitives::transaction::{Action, FunctionCallAction, Transaction, TransactionBody};
+use near_crypto::SecretKey;
 use near_primitives::views::FinalExecutionOutcomeView;
+use near_crypto::{InMemorySigner, PublicKey};
 use std::str::FromStr;
 use serde_json::json;
 use crate::near_credentials::NearCredential;
@@ -45,6 +47,16 @@ async fn submit_transaction(
     let signer_account_id = AccountId::from_str(&credential.account_id)
         .map_err(|e| format!("Invalid signer account ID: {}", e))?;
 
+    let public_key = PublicKey::from_str(&credential.public_key)
+        .map_err(|e| format!("Invalid public key: {}", e))?;
+
+    let private_key = credential.private_key.as_ref()
+        .ok_or_else(|| "Private key not found".to_string())?;
+
+    let secret_key = SecretKey::from_str(private_key)
+        .map_err(|e| format!("Invalid secret key: {}", e))?;
+    let signer = InMemorySigner::from_secret_key(signer_account_id.clone(), secret_key);
+
     let args = json!({
         "greeting": new_greeting
     });
@@ -56,21 +68,41 @@ async fn submit_transaction(
         deposit: 0,
     }));
 
-    let transaction = Transaction {
-        signer_id: signer_account_id,
-        public_key: credential.public_key.clone(),
-        nonce: 0, // Will be set by the RPC
-        receiver_id: contract_account_id,
-        block_hash: Default::default(), // Will be set by the RPC
-        actions: vec![action],
+    let access_key_query = methods::query::RpcQueryRequest {
+        block_reference: near_primitives::types::Finality::Final.into(),
+        request: near_primitives::views::QueryRequest::ViewAccessKey {
+            account_id: signer_account_id.clone(),
+            public_key: public_key.clone(),
+        },
     };
 
-    let private_key = credential.private_key.as_ref()
-        .ok_or_else(|| "Private key not found".to_string())?;
+    let access_key_response = client.call(access_key_query).await
+        .map_err(|e| format!("Failed to fetch access key: {}", e))?;
+
+    let block_hash = access_key_response.block_hash;
+    if block_hash.is_none() {
+        return Err("Failed to get block hash".to_string());
+    }
+
+    let access_key_view = match access_key_response.kind {
+        near_jsonrpc_primitives::types::query::QueryResponseKind::AccessKey(view) => view,
+        _ => return Err("Failed to get access key view".to_string()),
+    };
+
+    let transaction = Transaction::new(
+        signer_account_id,
+        public_key,
+        contract_account_id,
+        access_key_view.nonce + 1,
+        block_hash.unwrap(),
+        vec![action]
+    );
+
+    let signed_transaction = transaction.sign(&signer);
 
     client
         .call(methods::broadcast_tx_commit::RpcBroadcastTxCommitRequest {
-            signed_transaction: transaction.sign(private_key),
+            signed_transaction,
         })
         .await
         .map_err(|e| format!("Failed to submit transaction: {}", e))
@@ -168,7 +200,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                     }
                 }
                 h3 { "Transaction Preview" }
-                if let Some(preview) = transaction_preview.get() {
+                if let Some(preview) = transaction_preview() {
                     div { class: "preview-content",
                         div { class: "preview-item",
                             span { class: "label", "Network: " }
