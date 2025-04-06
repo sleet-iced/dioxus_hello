@@ -14,6 +14,27 @@ pub fn MainApp() -> Element {
     }
 }
 
+
+#[component]
+pub fn NetworkToggle(onchange: EventHandler<bool>) -> Element {
+    let mut is_mainnet = use_signal(|| true);
+
+    rsx! {
+        button {
+            class: "NetworkToggle_button",
+            onclick: move |_| {
+                is_mainnet.set(!is_mainnet());
+                onchange.call(is_mainnet());
+            },
+            if is_mainnet() { "MAINNET" } else { "TESTNET" }
+        }
+    }
+}
+
+
+
+/// 🧍
+/// Body
 #[component]
 pub fn Body() -> Element {
     let mut network = use_signal(|| true);
@@ -30,11 +51,14 @@ pub fn Body() -> Element {
             network: network()
         }
 
-        AccountSelector {
+        AccountSelectorComponent {
             network: network()
         }
     }
 }
+
+
+
 
 #[component]
 pub fn GreetingViewerComponent(network: bool) -> Element {
@@ -48,18 +72,15 @@ pub fn GreetingViewerComponent(network: bool) -> Element {
 
 
 #[component]
-#[component]
-pub fn NetworkToggle(onchange: EventHandler<bool>) -> Element {
-    let mut is_mainnet = use_signal(|| true);
-
+pub fn AccountSelectorComponent(network: bool) -> Element {
     rsx! {
-        button {
-            class: "NetworkToggle_button",
-            onclick: move |_| {
-                is_mainnet.set(!is_mainnet());
-                onchange.call(is_mainnet());
-            },
-            if is_mainnet() { "MAINNET" } else { "TESTNET" }
+        AccountSelector {
+            network: network
         }
     }
 }
+
+
+
+
+
