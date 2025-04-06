@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use near_jsonrpc_client::{JsonRpcClient, methods};
+use near_primitives::borsh;
 use near_primitives::types::AccountId;
 use near_primitives::transaction::{Action, FunctionCallAction, Transaction, SignedTransaction};
 use near_crypto::SecretKey;
@@ -59,7 +60,7 @@ async fn submit_transaction(
 
     let args = json!({
         "greeting": new_greeting
-    });
+    );
 
     let action = Action::FunctionCall(Box::new(FunctionCallAction {
         method_name: "set_greeting".to_string(),
@@ -80,21 +81,20 @@ async fn submit_transaction(
         .map_err(|e| format!("Failed to fetch access key: {}", e))?;
 
     let block_hash = access_key_response.block_hash;
-    let block_hash = block_hash.ok_or_else(|| "Failed to get block hash".to_string())?;
 
     let access_key_view = match access_key_response.kind {
         near_jsonrpc_primitives::types::query::QueryResponseKind::AccessKey(view) => view,
         _ => return Err("Failed to get access key view".to_string()),
     };
 
-    let transaction = Transaction::V2(near_primitives::transaction::TransactionV2 {
-        signer_id: signer_account_id,
+    let transaction = Transaction::new(
+        signer_account_id,
         public_key,
-        nonce: access_key_view.nonce + 1,
-        receiver_id: contract_account_id,
+        contract_account_id,
+        access_key_view.nonce + 1,
         block_hash,
-        actions: vec![action],
-    });
+        vec![action]
+    );
 
     let transaction_bytes = borsh::to_vec(&transaction).map_err(|e| e.to_string())?;
     let hash = near_primitives::hash::hash(&transaction_bytes);
@@ -184,7 +184,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                                         transaction_status.set(Some(format!("Transaction failed: {}", e)));
                                     }
                                 }
-                            });
+                            );
                         } else {
                             transaction_status.set(Some("Please select an account first".to_string()));
                         }
@@ -201,7 +201,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                     }
                 }
                 h3 { "Transaction Preview" }
-                if let Some(preview) = transaction_preview() {
+                if let Some(preview) = transaction_preview.get() {
                     div { class: "preview-content",
                         div { class: "preview-item",
                             span { class: "label", "Network: " }
