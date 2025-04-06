@@ -10,6 +10,7 @@ use near_crypto::{InMemorySigner, PublicKey};
 use std::str::FromStr;
 use serde_json::json;
 use crate::near_credentials::NearCredential;
+use std::sync::LazyLock;
 
 const GREETING_UPDATER_CSS: Asset = asset!("src/css/greeting_updater.css");
 
@@ -25,20 +26,11 @@ pub struct TransactionPreview {
 
 async fn submit_transaction(
     network: bool,
-    contract_id: &str,
     new_greeting: &str,
     credential: &NearCredential,
 ) -> Result<FinalExecutionOutcomeView, String> {
-    let config = if network {
-        toml::from_str::<toml::Value>(include_str!("network_config.toml"))
-            .unwrap()["mainnet"]
-            .clone()
-    } else {
-        toml::from_str::<toml::Value>(include_str!("network_config.toml"))
-            .unwrap()["testnet"]
-            .clone()
-    };
-
+    let config = if network { CONFIG_MAINNET.clone() } else { CONFIG_TESTNET.clone() };
+    let contract_id = config["contract_id"].as_str().unwrap();
     let rpc_url = config["rpc_url"].as_str().unwrap();
     let client = JsonRpcClient::connect(rpc_url);
 
@@ -114,17 +106,9 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
     let mut transaction_preview = use_signal(|| None::<TransactionPreview>);
     let mut transaction_status = use_signal(|| None::<String>);
 
-    let update_preview = move || {
+    let mut update_preview = move || {
         let network_name = if network { "mainnet" } else { "testnet" };
-        let config = if network {
-            toml::from_str::<toml::Value>(include_str!("network_config.toml"))
-                .unwrap()["mainnet"]
-                .clone()
-        } else {
-            toml::from_str::<toml::Value>(include_str!("network_config.toml"))
-                .unwrap()["testnet"]
-                .clone()
-        };
+        let config = if network { CONFIG_MAINNET.clone() } else { CONFIG_TESTNET.clone() };
         let contract_id = config["contract_id"].as_str().unwrap();
         transaction_preview.set(Some(TransactionPreview {
             network: network_name.to_string(),
@@ -154,7 +138,8 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                     class: "update-button",
                     disabled: new_greeting().is_empty() || selected_account.is_none(),
                     onclick: move |_| {
-                        if let Some(account) = selected_account.as_ref() {
+                        let account = selected_account.clone();
+                        if let Some(account) = account {
                             transaction_status.set(Some("Preparing transaction...".to_string()));
                             let config = if network {
                                 toml::from_str::<toml::Value>(include_str!("network_config.toml"))
@@ -171,9 +156,8 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                             spawn(async move {
                                 match submit_transaction(
                                     network,
-                                    contract_id,
                                     &new_greeting(),
-                                    account,
+                                    &account,
                                 ).await {
                                     Ok(_) => {
                                         transaction_status.set(Some("Transaction successful!".to_string()));
@@ -199,7 +183,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                     }
                 ))}
                 h3 { "Transaction Preview" }
-                {transaction_preview().map(|preview| rsx!(
+                {transaction_preview.read().as_ref().map(|preview| rsx!(
                     div { class: "preview-content",
                         div { class: "preview-item",
                             span { class: "label", "Network: " }
@@ -231,3 +215,11 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
         }
     }
 }
+
+const CONFIG_MAINNET: LazyLock<toml::Value> = LazyLock::new(|| {
+    toml::from_str::<toml::Value>(include_str!("network_config.toml")).unwrap()["mainnet"].clone()
+});
+
+const CONFIG_TESTNET: LazyLock<toml::Value> = LazyLock::new(|| {
+    toml::from_str::<toml::Value>(include_str!("network_config.toml")).unwrap()["testnet"].clone()
+});
