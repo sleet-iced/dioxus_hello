@@ -1,11 +1,12 @@
 use dioxus::prelude::*;
 use serde::Deserialize;
 use near_jsonrpc_client::JsonRpcClient;
-use near_primitives::types::{AccountId, BlockReference, Finality};
-use near_primitives::views::QueryRequest;
-use near_jsonrpc_client::methods::query::RpcQueryRequest;
+use near_primitives::types::AccountId;
+use near_jsonrpc_primitives::types::query::QueryResponseKind;
+use near_primitives::views::{QueryRequest, FunctionResult};
 use std::str::FromStr;
 use serde_json::json;
+use base64::encode;
 
 const GREETING_CSS: Asset = asset!("src/css/greeting_viewer.css");
 
@@ -25,7 +26,7 @@ pub fn GreetingViewer(network: bool) -> Element {
         loading.set(true);
         error.set(String::from(""));
 
-        async move {
+        spawn(async move {
             let config = if network {
                 toml::from_str::<toml::Value>(include_str!("network_config.toml"))
                     .unwrap()["mainnet"]
@@ -39,7 +40,7 @@ pub fn GreetingViewer(network: bool) -> Element {
             let rpc_url = config["rpc_url"].as_str().unwrap();
             let contract_id = config["contract_id"].as_str().unwrap();
 
-            let provider = JsonRpcClient::connect(rpc_url);
+            let client = JsonRpcClient::connect(rpc_url);
             let account_id = match AccountId::from_str(contract_id) {
                 Ok(id) => id,
                 Err(e) => {
@@ -50,22 +51,19 @@ pub fn GreetingViewer(network: bool) -> Element {
             };
 
             let args = json!({});
-            let query_request = RpcQueryRequest {
-                block_reference: BlockReference::Finality(Finality::Final),
-                request: QueryRequest::CallFunction {
-                    account_id,
-                    method_name: "get_greeting".to_string(),
-                    args: args.to_string().into_bytes().into(),
-                },
+            let query = QueryRequest::CallFunction {
+                account_id,
+                method_name: "get_greeting".to_string(),
+                args: args.to_string().into_bytes(),
             };
 
-            match provider.call(query_request).await {
+            match client.query(query).await {
                 Ok(response) => {
-                    if let near_primitives::views::QueryResponseKind::CallResult(result) = response.kind {
-                        match serde_json::from_slice::<GreetingResponse>(&result.result) {
+                    if let QueryResponseKind::CallResult(FunctionResult { result, .. }) = response.kind {
+                        match serde_json::from_slice::<GreetingResponse>(&result) {
                             Ok(response) => greeting.set(response.greeting),
                             Err(_) => {
-                                match String::from_utf8(result.result.to_vec()) {
+                                match String::from_utf8(result.to_vec()) {
                                     Ok(raw_greeting) => greeting.set(raw_greeting.trim_matches('"').to_string()),
                                     Err(e) => error.set(format!("Failed to parse response: {}", e)),
                                 }
