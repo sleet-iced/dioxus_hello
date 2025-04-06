@@ -6,7 +6,7 @@ use near_primitives::types::AccountId;
 use near_primitives::transaction::{Action, FunctionCallAction, Transaction, SignedTransaction};
 use near_crypto::SecretKey;
 use near_primitives::views::FinalExecutionOutcomeView;
-use near_crypto::{InMemorySigner, PublicKey, Signer};
+use near_crypto::{InMemorySigner, PublicKey};
 use std::str::FromStr;
 use serde_json::json;
 use crate::near_credentials::NearCredential;
@@ -87,13 +87,14 @@ async fn submit_transaction(
         _ => return Err("Failed to get access key view".to_string()),
     };
 
-    let transaction = Transaction::new(
+    let transaction = Transaction::new_v1(
         signer_account_id,
         public_key,
         contract_account_id,
         access_key_view.nonce + 1,
+        vec![action],
         block_hash,
-        vec![action]
+        0 // priority_fee
     );
 
     let transaction_bytes = borsh::to_vec(&transaction).map_err(|e| e.to_string())?;
@@ -131,7 +132,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
             network: network_name.to_string(),
             contract_id: contract_id.to_string(),
             method_name: "set_greeting".to_string(),
-            args: format!("{{\"greeting\":\"{}\"}}", new_greeting.get())
+            args: format!("{{\"greeting\":\"{}\"}}", new_greeting.get_untracked()),
             gas: "30 TGas".to_string(),
             deposit: "0 NEAR".to_string(),
         }));
@@ -145,7 +146,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                 input {
                     class: "greeting-input",
                     placeholder: "Enter new greeting",
-                    value: new_greeting.get()
+                    value: new_greeting.get_untracked()
                     oninput: move |evt| {
                         new_greeting.set(evt.value().to_string());
                         update_preview();
@@ -173,7 +174,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                                 match submit_transaction(
                                     network,
                                     contract_id,
-                                    &new_greeting.get()
+                                    &new_greeting.get_untracked(),
                                     account,
                                 ).await {
                                     Ok(_) => {
