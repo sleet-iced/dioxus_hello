@@ -1,8 +1,8 @@
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use near_jsonrpc_client::{JsonRpcClient, methods};
-use near_primitives::types::{AccountId, FunctionCallActionView};
-use near_primitives::transaction::{Action, Transaction};
+use near_primitives::types::AccountId;
+use near_primitives::transaction::{Action, FunctionCall, Transaction};
 use near_primitives::views::FinalExecutionOutcomeView;
 use std::str::FromStr;
 use serde_json::json;
@@ -49,7 +49,7 @@ async fn submit_transaction(
         "greeting": new_greeting
     });
 
-    let action = Action::FunctionCall(FunctionCallActionView {
+    let action = Action::FunctionCall(FunctionCall {
         method_name: "set_greeting".to_string(),
         args: args.to_string().into_bytes(),
         gas: 30_000_000_000_000, // 30 TGas
@@ -67,7 +67,7 @@ async fn submit_transaction(
 
     client
         .call(methods::broadcast_tx_commit::RpcBroadcastTxCommitRequest {
-            signed_transaction: transaction.sign(&credential.secret_key),
+            signed_transaction: transaction.sign(&credential.private_key.as_ref().unwrap()),
         })
         .await
         .map_err(|e| format!("Failed to submit transaction: {}", e))
@@ -112,7 +112,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                     placeholder: "Enter new greeting",
                     value: new_greeting,
                     oninput: move |evt| {
-                        new_greeting.set(evt.value.clone());
+                        new_greeting.set(evt.value().to_string());
                         update_preview();
                     }
                 }
