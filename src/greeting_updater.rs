@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use near_jsonrpc_client::{JsonRpcClient, methods};
 use near_primitives::types::AccountId;
-use near_primitives::transaction::{Action, Transaction};
+use near_primitives::transaction::{Action, TransactionV0 as Transaction, FunctionCallAction};
 use near_primitives::views::FinalExecutionOutcomeView;
 use std::str::FromStr;
 use serde_json::json;
@@ -49,7 +49,7 @@ async fn submit_transaction(
         "greeting": new_greeting
     });
 
-    let action = Action::FunctionCall(Box::new(near_primitives::transaction::FunctionCallAction {
+    let action = Action::FunctionCall(Box::new(FunctionCallAction {
         method_name: "set_greeting".to_string(),
         args: args.to_string().into_bytes(),
         gas: 30_000_000_000_000, // 30 TGas
