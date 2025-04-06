@@ -7,6 +7,7 @@ use near_primitives::types::{AccountId, BlockReference, Finality};
 use crate::near_credentials::NearCredential;
 use std::str::FromStr;
 use near_crypto;
+use dioxus::prelude::spawn;
 
 const GREETING_UPDATER_CSS: Asset = asset!("src/css/greeting_updater.css");
 
@@ -21,7 +22,7 @@ pub struct TransactionPreview {
 }
 
 #[component]
-pub fn GreetingUpdater(cx: Scope, network: bool, selected_account: Option<NearCredential>) -> Element {
+pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) -> Element {
     let mut new_greeting = use_signal(|| String::new());
     let mut transaction_preview = use_signal(|| None::<TransactionPreview>);
     let mut transaction_status = use_signal(|| None::<String>);
@@ -101,7 +102,7 @@ pub fn GreetingUpdater(cx: Scope, network: bool, selected_account: Option<NearCr
                                 deposit: 0,
                             });
 
-                            cx.spawn(async move {
+                            spawn(async move {
                                 // Get latest block hash
                                 let block_hash = match rpc_client
                                     .block(BlockReference::Finality(Finality::Final))
