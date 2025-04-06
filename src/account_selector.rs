@@ -2,16 +2,16 @@ use dioxus::prelude::*;
 use crate::near_credentials::{NearCredential, load_near_credentials};
 
 #[component]
-pub fn AccountSelector(cx: Scope, network: bool) -> Element {
-    let credentials = use_memo(cx, (), |_| load_near_credentials());
+pub fn AccountSelector(network: bool) -> Element {
+    let credentials = use_memo((), |_| load_near_credentials());
     let filtered_accounts = credentials.iter()
         .filter(|cred| {
-            let network_name = if *network { "mainnet" } else { "testnet" };
+            let network_name = if network { "mainnet" } else { "testnet" };
             cred.network == network_name
         })
         .collect::<Vec<_>>();
     
-    let selected_account = use_signal(cx, || None::<String>);
+    let selected_account = use_signal(|| None::<String>);
 
     rsx! {
         div { class: "AccountSelector_container",
