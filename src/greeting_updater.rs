@@ -106,6 +106,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
     let mut new_greeting = use_signal(|| String::new());
     let mut transaction_preview = use_signal(|| None::<TransactionPreview>);
     let mut transaction_status = use_signal(|| None::<String>);
+    let mut selected_account = use_signal(|| None::<NearCredential>);
 
     let mut update_preview = move || {
         let network_name = if network { "mainnet" } else { "testnet" };
@@ -125,7 +126,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
         link { rel: "stylesheet", href: GREETING_UPDATER_CSS }
         div { class: "greeting-updater",
             h2 { "Update Greeting" }
-            AccountSelector { network: network, onselect: move |account| selected_account = Some(account) }
+            AccountSelector { network: network, onselect: move |account: String| selected_account.set(Some(NearCredential { account_id: account, public_key: String::new(), network: network.to_string(), private_key: None })) }
             div { class: "input-group",
                 input {
                     class: "greeting-input",
@@ -138,9 +139,9 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                 }
                 button {
                     class: "update-button",
-                    disabled: new_greeting().is_empty() || selected_account.is_none(),
+                    disabled: new_greeting().is_empty() || selected_account().is_none(),
                     onclick: move |_| {
-                        let account = selected_account.clone();
+                        let account = selected_account().clone();
                         if let Some(account) = account {
                             transaction_status.set(Some("Preparing transaction...".to_string()));
                             let config = if network {
