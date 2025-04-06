@@ -5,6 +5,7 @@ use dioxus::prelude::*;
 mod app;
 mod account_selector;
 mod near_credentials;
+mod greeting_viewer;
 use app::MainApp as MainApp;
 
 

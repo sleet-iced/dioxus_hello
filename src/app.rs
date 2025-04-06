@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
 use crate::account_selector::AccountSelector;
+use crate::greeting_viewer::GreetingViewer;
 
 const APP_CSS: Asset = asset!("src/css/app.css");
 
@@ -25,6 +26,9 @@ pub fn Body() -> Element {
             onchange: move |val| network.set(val)
         }
         AccountSelector {
+            network: network()
+        }
+        GreetingViewer {
             network: network()
         }
     }
