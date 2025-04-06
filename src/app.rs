@@ -25,10 +25,12 @@ pub fn Body() -> Element {
         NetworkToggle {
             onchange: move |val| network.set(val)
         }
-        AccountSelector {
+        
+        GreetingViewer {
             network: network()
         }
-        GreetingViewer {
+
+        AccountSelector {
             network: network()
         }
     }
