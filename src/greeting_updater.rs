@@ -49,12 +49,12 @@ async fn submit_transaction(
         "greeting": new_greeting
     });
 
-    let action = Action::FunctionCall(near_primitives::transaction::FunctionCallAction {
+    let action = Action::FunctionCall(Box::new(near_primitives::transaction::FunctionCallAction {
         method_name: "set_greeting".to_string(),
         args: args.to_string().into_bytes(),
         gas: 30_000_000_000_000, // 30 TGas
         deposit: 0,
-    });
+    }));
 
     let transaction = Transaction {
         signer_id: signer_account_id,
@@ -168,7 +168,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                     }
                 }
                 h3 { "Transaction Preview" }
-                if let Some(preview) = transaction_preview() {
+                if let Some(preview) = transaction_preview.get() {
                     div { class: "preview-content",
                         div { class: "preview-item",
                             span { class: "label", "Network: " }
