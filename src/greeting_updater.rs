@@ -156,7 +156,6 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                             spawn(async move {
                                 match submit_transaction(
                                     network,
-                                    contract_id,
                                     &new_greeting(),
                                     &account,
                                 ).await {
