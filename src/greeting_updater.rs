@@ -52,13 +52,11 @@ async fn submit_transaction(
         .map_err(|e| format!("Invalid secret key: {}", e))?;
     let signer = InMemorySigner::from_secret_key(signer_account_id.clone(), secret_key);
 
-    let args = json!({
-        "greeting": new_greeting
-    });
+    let args = serde_json::to_vec(&json!({"greeting": new_greeting})).unwrap();
 
     let action = Action::FunctionCall(Box::new(FunctionCallAction {
         method_name: "set_greeting".to_string(),
-        args: args.to_string().into_bytes(),
+        args,
         gas: 30_000_000_000_000, // 30 TGas
         deposit: 0,
     }));
@@ -78,13 +76,14 @@ async fn submit_transaction(
         _ => return Err("Failed to get access key view".to_string()),
     };
     
-    let transaction = Transaction::new(
-        signer_account_id,
+    let transaction = Transaction {
+        signer_id: signer_account_id,
         public_key,
-        contract_account_id,
-        access_key_view.nonce + 1,
-        block_hash
-      );
+        receiver_id: contract_account_id,
+        nonce: access_key_view.nonce + 1,
+        block_hash,
+        actions: vec![action]
+    };
   
 
     let transaction_bytes = borsh::to_vec(&transaction).map_err(|e| e.to_string())?;
