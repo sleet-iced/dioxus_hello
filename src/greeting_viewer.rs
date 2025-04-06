@@ -1,12 +1,11 @@
 use dioxus::prelude::*;
 use serde::Deserialize;
-use near_jsonrpc_client::JsonRpcClient;
+use near_jsonrpc_client::{JsonRpcClient, methods};
 use near_primitives::types::AccountId;
 use near_jsonrpc_primitives::types::query::QueryResponseKind;
-use near_primitives::views::{QueryRequest, FunctionResult};
+use near_primitives::views::QueryRequest;
 use std::str::FromStr;
 use serde_json::json;
-use base64::encode;
 
 const GREETING_CSS: Asset = asset!("src/css/greeting_viewer.css");
 
@@ -51,10 +50,13 @@ pub fn GreetingViewer(network: bool) -> Element {
             };
 
             let args = json!({});
-            let query = QueryRequest::CallFunction {
-                account_id,
-                method_name: "get_greeting".to_string(),
-                args: args.to_string().into_bytes().into(),
+            let query = methods::query::RpcQueryRequest {
+                request: QueryRequest::CallFunction {
+                    account_id,
+                    method_name: "get_greeting".to_string(),
+                    args: args.to_string().into_bytes().into(),
+                },
+                block_reference: near_primitives::types::Finality::Final.into(),
             };
 
             match client.call(query).await {
