@@ -61,11 +61,11 @@ pub fn GreetingViewer(network: bool) -> Element {
 
             match client.call(query).await {
                 Ok(response) => {
-                    if let QueryResponseKind::CallResult(FunctionResult { result, .. }) = response.kind {
-                        match serde_json::from_slice::<GreetingResponse>(&result) {
+                    if let QueryResponseKind::CallResult(result) = response.kind {
+                        match serde_json::from_slice::<GreetingResponse>(&result.result) {
                             Ok(response) => greeting.set(response.greeting),
                             Err(_) => {
-                                match String::from_utf8(result.to_vec()) {
+                                match String::from_utf8(result.result.to_vec()) {
                                     Ok(raw_greeting) => greeting.set(raw_greeting.trim_matches('"').to_string()),
                                     Err(e) => error.set(format!("Failed to parse response: {}", e)),
                                 }
