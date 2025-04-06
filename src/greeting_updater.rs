@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 
+const GREETING_UPDATER_CSS: Asset = asset!("src/css/greeting_updater.css");
+
 #[derive(Serialize, Deserialize)]
 pub struct TransactionPreview {
     network: String,
@@ -39,6 +41,7 @@ pub fn GreetingUpdater(network: bool) -> Element {
     };
 
     rsx! {
+        link { rel: "stylesheet", href: GREETING_UPDATER_CSS }
         div { class: "greeting-updater",
             h2 { "Update Greeting" }
             div { class: "input-group",
