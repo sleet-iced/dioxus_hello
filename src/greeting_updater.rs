@@ -6,7 +6,7 @@ use near_primitives::types::AccountId;
 use near_primitives::transaction::{Action, FunctionCallAction, Transaction, SignedTransaction};
 use near_crypto::SecretKey;
 use near_primitives::views::FinalExecutionOutcomeView;
-use near_crypto::{InMemorySigner, PublicKey};
+use near_crypto::{InMemorySigner, PublicKey, Signer};
 use std::str::FromStr;
 use serde_json::json;
 use crate::near_credentials::NearCredential;
@@ -60,7 +60,7 @@ async fn submit_transaction(
 
     let args = json!({
         "greeting": new_greeting
-    );
+    });
 
     let action = Action::FunctionCall(Box::new(FunctionCallAction {
         method_name: "set_greeting".to_string(),
@@ -98,7 +98,7 @@ async fn submit_transaction(
 
     let transaction_bytes = borsh::to_vec(&transaction).map_err(|e| e.to_string())?;
     let hash = near_primitives::hash::hash(&transaction_bytes);
-    let signature = signer.sign(hash.as_ref());
+    let signature = signer.secret_key.sign(hash.as_ref());
     let signed_transaction = SignedTransaction::new(signature, transaction);
 
     client
@@ -131,8 +131,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
             network: network_name.to_string(),
             contract_id: contract_id.to_string(),
             method_name: "set_greeting".to_string(),
-            args: format!("{{\
-                \"greeting\":\"{}\"}}", new_greeting()),
+            args: format!("{{\"greeting\":\"{}\"}}", new_greeting.get())
             gas: "30 TGas".to_string(),
             deposit: "0 NEAR".to_string(),
         }));
@@ -146,7 +145,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                 input {
                     class: "greeting-input",
                     placeholder: "Enter new greeting",
-                    value: new_greeting,
+                    value: new_greeting.get()
                     oninput: move |evt| {
                         new_greeting.set(evt.value().to_string());
                         update_preview();
@@ -154,7 +153,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                 }
                 button {
                     class: "update-button",
-                    disabled: new_greeting().is_empty() || selected_account.is_none(),
+                    disabled: new_greeting.get().is_empty() || selected_account.is_none()
                     onclick: move |_| {
                         if let Some(account) = selected_account.as_ref() {
                             transaction_status.set(Some("Preparing transaction...".to_string()));
@@ -174,7 +173,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                                 match submit_transaction(
                                     network,
                                     contract_id,
-                                    &new_greeting(),
+                                    &new_greeting.get()
                                     account,
                                 ).await {
                                     Ok(_) => {
@@ -184,7 +183,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                                         transaction_status.set(Some(format!("Transaction failed: {}", e)));
                                     }
                                 }
-                            );
+                            });
                         } else {
                             transaction_status.set(Some("Please select an account first".to_string()));
                         }
@@ -194,7 +193,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
             }
 
             div { class: "transaction-preview",
-                if let Some(status) = transaction_status() {
+                if let Some(status) = transaction_status.get() {
                     div { class: "preview-item status",
                         span { class: "label", "Status: " }
                         span { class: "value", "{status}" }
