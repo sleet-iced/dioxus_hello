@@ -86,8 +86,11 @@ pub fn GreetingViewer(network: bool) -> Element {
         });
     });
 
+
+
     rsx! {
         link { rel: "stylesheet", href: GREETING_CSS }
+        
         div { class: "greeting-container",
             if loading() {
                 div { class: "loading", "Loading..." }
@@ -96,17 +99,22 @@ pub fn GreetingViewer(network: bool) -> Element {
             } else {
                 div { class: "greeting", "{greeting()}" }
             }
-            button {
-                class: "Refresh_button",
-                disabled: loading(),
-                onclick: move |_| {
-                    to_owned![greeting, loading, error];
-                    spawn(async move {
-                        fetch_greeting(network, &mut greeting, &mut loading, &mut error).await;
-                    });
-                },
-                "🔄 REFRESH"
-            }
+        
+
+        button {
+            class: "refresh_button",
+            disabled: loading(),
+            onclick: move |_| {
+                to_owned![greeting, loading, error];
+                spawn(async move {
+                    fetch_greeting(network, &mut greeting, &mut loading, &mut error).await;
+                });
+            },
+            "🔄 REFRESH GREETING"
         }
+
     }
+
+    }
+
 }

@@ -28,3 +28,23 @@
     border-radius: 4px;
     background-color: #ffebee;
 }
+
+.refresh_button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #7d84b2; /* Light color from design */
+    color: #ffffff; /* White text for contrast */
+    font-family: 'Ubuntu', sans-serif; /* Use Ubuntu font */
+    font-weight: 500;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+    position: relative;
+
+    width: 100%;
+    margin-top: 20px;
+}
+
+.refresh_button:hover {
+    background-color: #8e9dcc; /* Slightly darker shade for hover */
+}

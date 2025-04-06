@@ -28,6 +28,5 @@ body {
 
 .NetworkToggle_button:hover {
     background-color: #8e9dcc; /* Slightly darker shade for hover */
-    transform: translateY(-2px);
 }
 
