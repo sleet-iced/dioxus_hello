@@ -51,7 +51,7 @@ pub fn Body() -> Element {
             network: network()
         }
 
-        AccountSelectorComponent {
+        GreetingUpdaterComponent {
             network: network()
         }
     }
@@ -72,7 +72,7 @@ pub fn GreetingViewerComponent(network: bool) -> Element {
 
 
 #[component]
-pub fn AccountSelectorComponent(network: bool) -> Element {
+pub fn GreetingUpdaterComponent(network: bool) -> Element {
     rsx! {
         AccountSelector {
             network: network
