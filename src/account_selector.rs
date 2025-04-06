@@ -1,6 +1,9 @@
 use dioxus::prelude::*;
 use crate::near_credentials::load_near_credentials;
 
+const ACCOUNT_SELECTOR_CSS: Asset = asset!("src/css/account_selector.css");
+
+
 #[component]
 pub fn AccountSelector(network: bool) -> Element {
     let credentials = use_signal(|| load_near_credentials());
@@ -13,6 +16,7 @@ pub fn AccountSelector(network: bool) -> Element {
         .collect::<Vec<_>>();
 
     rsx! {
+        document::Link { rel: "stylesheet", href: ACCOUNT_SELECTOR_CSS }
         div { class: "AccountSelector_container",
             select {
                 class: "AccountSelector_select",
