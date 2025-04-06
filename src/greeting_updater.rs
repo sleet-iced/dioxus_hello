@@ -1,5 +1,16 @@
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
+use near_jsonrpc_client::JsonRpcClient;
+use near_jsonrpc_primitives::types::query::QueryResponseKind;
+use near_jsonrpc_primitives::types::transactions::TransactionInfo;
+use near_primitives::transaction::{Action, FunctionCallAction, Transaction, SignedTransaction};
+use near_primitives::types::{AccountId, BlockReference, Finality};
+use near_primitives::borsh::BorshSerialize;
+use near_primitives::hash::CryptoHash;
+use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
+use crate::near_credentials::NearCredential;
+use std::str::FromStr;
+use near_crypto;
 
 const GREETING_UPDATER_CSS: Asset = asset!("src/css/greeting_updater.css");
 
@@ -14,9 +25,10 @@ pub struct TransactionPreview {
 }
 
 #[component]
-pub fn GreetingUpdater(network: bool) -> Element {
+pub fn GreetingUpdater(cx: Scope, network: bool, selected_account: Option<NearCredential>) -> Element {
     let mut new_greeting = use_signal(|| String::new());
     let mut transaction_preview = use_signal(|| None::<TransactionPreview>);
+let mut transaction_status = use_signal(|| None::<String>);
 
     let mut update_preview = move || {
         let network_name = if network { "mainnet" } else { "testnet" };
@@ -58,13 +70,136 @@ pub fn GreetingUpdater(network: bool) -> Element {
                     class: "update-button",
                     disabled: new_greeting().is_empty(),
                     onclick: move |_| {
-                        // TODO: Implement update functionality
+                        if let Some(account) = selected_account.as_ref() {
+                            let rpc_url = if network {
+                                "https://rpc.mainnet.near.org"
+                            } else {
+                                "https://rpc.testnet.near.org"
+                            };
+                            
+                            let rpc_client = JsonRpcClient::connect(rpc_url);
+                            
+                            let contract_id = if network {
+                                toml::from_str::<toml::Value>(include_str!("network_config.toml"))
+                                    .unwrap()["mainnet"]["contract_id"]
+                                    .as_str()
+                                    .unwrap()
+                            } else {
+                                toml::from_str::<toml::Value>(include_str!("network_config.toml"))
+                                    .unwrap()["testnet"]["contract_id"]
+                                    .as_str()
+                                    .unwrap()
+                            };
+
+                            let args = format!("{{\"\": \"{}\"}}", new_greeting());
+                            transaction_status.set(Some("Preparing transaction...".to_string()));
+
+                            let signer_id = AccountId::from_str(&account.account_id).unwrap();
+                            let receiver_id = AccountId::from_str(contract_id).unwrap();
+                            
+                            // Create function call action
+                            let action = Action::FunctionCall(FunctionCallAction {
+                                method_name: "set_greeting".to_string(),
+                                args: args.into_bytes(),
+                                gas: 30_000_000_000_000, // 30 TGas
+                                deposit: 0,
+                            });
+
+                            cx.spawn(async move {
+                                // Get latest block hash
+                                let block_hash = match rpc_client
+                                    .block(BlockReference::Finality(Finality::Final))
+                                    .await {
+                                        Ok(block) => block.header.hash,
+                                        Err(err) => {
+                                            transaction_status.set(Some(format!("Failed to get block: {}", err)));
+                                            return;
+                                        }
+                                    };
+
+                                // Get current nonce
+                                let access_key_query_response = match rpc_client
+                                    .query(near_jsonrpc_primitives::types::query::RpcQueryRequest {
+                                        block_reference: BlockReference::Finality(Finality::Final),
+                                        request: near_primitives::views::QueryRequest::ViewAccessKey {
+                                            account_id: signer_id.clone(),
+                                            public_key: account.public_key.parse().unwrap(),
+                                        },
+                                    })
+                                    .await {
+                                        Ok(response) => response,
+                                        Err(err) => {
+                                            transaction_status.set(Some(format!("Failed to get access key: {}", err)));
+                                            return;
+                                        }
+                                    };
+
+                                let current_nonce = match access_key_query_response.kind {
+                                    QueryResponseKind::AccessKey(access_key) => access_key.nonce,
+                                    _ => {
+                                        transaction_status.set(Some("Failed to get current nonce".to_string()));
+                                        return;
+                                    }
+                                };
+
+                                // Create transaction
+                                let transaction = Transaction {
+                                    signer_id,
+                                    public_key: account.public_key.parse().unwrap(),
+                                    nonce: current_nonce + 1,
+                                    receiver_id,
+                                    block_hash,
+                                    actions: vec![action],
+                                };
+
+                                // Sign transaction
+                                if let Some(private_key) = &account.private_key {
+                                    let signer = near_crypto::InMemorySigner::from_secret_key(
+                                        account.account_id.parse().unwrap(),
+                                        private_key.parse().unwrap(),
+                                    );
+
+                                    let signed_transaction = SignedTransaction::sign(
+                                        transaction,
+                                        &signer,
+                                        account.public_key.parse().unwrap(),
+                                    );
+
+                                    transaction_status.set(Some("Sending transaction...".to_string()));
+
+                                    // Send transaction
+                                    match rpc_client.broadcast_tx_commit(&signed_transaction).await {
+                                        Ok(outcome) => {
+                                            transaction_status.set(Some(format!(
+                                                "Transaction successful! Hash: {}",
+                                                outcome.transaction_outcome.id
+                                            )));
+                                        }
+                                        Err(err) => {
+                                            transaction_status.set(Some(format!("Transaction failed: {}", err)));
+                                        }
+                                    }
+                                } else {
+                                    transaction_status.set(Some("Private key not available".to_string()));
+                                }
+                            });
+                        } else {
+                            transaction_status.set(Some("Please select an account first".to_string()));
+                        }
                     },
                     "Update Greeting"
                 }
             }
 
             div { class: "transaction-preview",
+                if let Some(status) = transaction_status.read().as_ref() {
+                    rsx!(
+                        div { class: "preview-item status",
+                            span { class: "label", "Status: " }
+                            span { class: "value", "{status}" }
+                        }
+                    )
+                }
                 h3 { "Transaction Preview" }
                 match transaction_preview.read().as_ref() {
                     Some(preview) => rsx!(

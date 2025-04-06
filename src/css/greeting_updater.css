@@ -90,3 +90,15 @@
     font-family: 'Ubuntu Mono', monospace;
     word-break: break-all;
 }
+
+.preview-item.status {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 4px;
+    background: rgba(125, 132, 178, 0.1);
+}
+
+.preview-item.status .value {
+    color: #7d84b2;
+    font-weight: 500;
+}
