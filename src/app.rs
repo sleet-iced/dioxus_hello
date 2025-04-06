@@ -30,9 +30,9 @@ pub fn NetworkToggle() -> Element {
 
     rsx! {
         button {
+            class: "NetworkToggle_button",
             onclick: move |_| is_mainnet.set(!is_mainnet()),
-            style: "padding: 8px 16px; border-radius: 4px; cursor: pointer; background-color: #0070f3; color: white; border: none;",
-            if is_mainnet() { "Mainnet" } else { "Testnet" }
+            if is_mainnet() { "MAINNET" } else { "TESTNET" }
         }
     }
 }

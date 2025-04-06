@@ -9,3 +9,25 @@ body {
 }
 
 
+
+
+.NetworkToggle_button {
+    position: fixed;
+    top: 5px;
+    left: 5px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 0px;
+    background-color: #7d84b2; /* Light color from design */
+    color: #ffffff; /* White text for contrast */
+    font-family: 'Ubuntu', sans-serif; /* Use Ubuntu font */
+    font-weight: 500;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+}
+
+.NetworkToggle_button:hover {
+    background-color: #8e9dcc; /* Slightly darker shade for hover */
+    transform: translateY(-2px);
+}
+
