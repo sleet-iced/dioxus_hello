@@ -15,12 +15,12 @@ const GREETING_UPDATER_CSS: Asset = asset!("src/css/greeting_updater.css");
 
 #[derive(Serialize, Deserialize)]
 pub struct TransactionPreview {
-    network: String,
-    contract_id: String,
-    method_name: String,
-    args: String,
-    gas: String,
-    deposit: String,
+    pub network: String,
+    pub contract_id: String,
+    pub method_name: String,
+    pub args: String,
+    pub gas: String,
+    pub deposit: String,
 }
 
 async fn submit_transaction(
@@ -144,7 +144,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                 input {
                     class: "greeting-input",
                     placeholder: "Enter new greeting",
-                    value: new_greeting(),
+                    value: "{new_greeting()}",
                     oninput: move |evt| {
                         new_greeting.set(evt.value().to_string());
                         update_preview();
@@ -192,14 +192,14 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
             }
 
             div { class: "transaction-preview",
-                h3 { "Transaction Preview" }
-                { transaction_status().map(|status| rsx!(
+                {transaction_status().map(|status| rsx!(
                     div { class: "preview-item status",
                         span { class: "label", "Status: " }
                         span { class: "value", "{status}" }
                     }
-                )) }
-                { transaction_preview().map(|preview| rsx!(
+                ))}
+                h3 { "Transaction Preview" }
+                {transaction_preview().map(|preview| rsx!(
                     div { class: "preview-content",
                         div { class: "preview-item",
                             span { class: "label", "Network: " }
@@ -226,7 +226,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                             span { class: "value", "{preview.deposit}" }
                         }
                     }
-                )) }
+                ))}
             }
         }
     }
