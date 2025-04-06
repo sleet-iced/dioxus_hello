@@ -12,6 +12,7 @@ use serde_json::json;
 use crate::near_credentials::NearCredential;
 use std::sync::LazyLock;
 use crate::account_selector::AccountSelector;
+use crate::near_credentials::load_near_credentials;
 
 const GREETING_UPDATER_CSS: Asset = asset!("src/css/greeting_updater.css");
 
