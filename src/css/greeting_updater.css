@@ -1,15 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Offside&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+
 .greeting-updater {
     padding: 20px;
-    background: #ffffff;
+    background: #f9f9ed;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin: 20px 0;
+    font-family: 'Ubuntu', sans-serif;
 }
 
 .greeting-updater h2 {
-    color: #333;
+    color: #313638;
     margin-bottom: 20px;
     font-size: 1.5em;
+    font-family: 'Offside', cursive;
 }
 
 .input-group {
@@ -21,40 +25,46 @@
 .greeting-input {
     flex: 1;
     padding: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid #7d84b2;
     border-radius: 4px;
     font-size: 1em;
+    background: #ffffff;
+    color: #313638;
+    font-family: 'Ubuntu', sans-serif;
 }
 
 .update-button {
     padding: 10px 20px;
-    background-color: #0052cc;
-    color: white;
+    background-color: #7d84b2;
+    color: #ffffff;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s;
+    font-family: 'Ubuntu', sans-serif;
+    font-weight: 500;
 }
 
 .update-button:hover {
-    background-color: #0047b3;
+    background-color: #8e9dcc;
 }
 
 .update-button:disabled {
-    background-color: #ccc;
+    background-color: #d9dbf1;
     cursor: not-allowed;
 }
 
 .transaction-preview {
-    background: #f8f9fa;
+    background: #f9f9ed;
     padding: 15px;
     border-radius: 4px;
 }
 
 .transaction-preview h3 {
-    color: #555;
+    color: #313638;
     margin-bottom: 15px;
     font-size: 1.2em;
+    font-family: 'Offside', cursive;
 }
 
 .preview-content {
@@ -70,12 +80,13 @@
 }
 
 .preview-item .label {
-    color: #666;
+    color: #7d84b2;
     min-width: 100px;
+    font-weight: 500;
 }
 
 .preview-item .value {
-    color: #333;
-    font-family: monospace;
+    color: #313638;
+    font-family: 'Ubuntu Mono', monospace;
     word-break: break-all;
 }
