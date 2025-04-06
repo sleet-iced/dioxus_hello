@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use near_jsonrpc_client::{JsonRpcClient, methods};
 use near_primitives::types::AccountId;
-use near_primitives::transaction::{Action, FunctionCall, Transaction};
+use near_primitives::transaction::{Action, Transaction};
 use near_primitives::views::FinalExecutionOutcomeView;
 use std::str::FromStr;
 use serde_json::json;
@@ -49,7 +49,7 @@ async fn submit_transaction(
         "greeting": new_greeting
     });
 
-    let action = Action::FunctionCall(FunctionCall {
+    let action = Action::FunctionCall(near_primitives::transaction::FunctionCallAction {
         method_name: "set_greeting".to_string(),
         args: args.to_string().into_bytes(),
         gas: 30_000_000_000_000, // 30 TGas
@@ -65,9 +65,12 @@ async fn submit_transaction(
         actions: vec![action],
     };
 
+    let private_key = credential.private_key.as_ref()
+        .ok_or_else(|| "Private key not found".to_string())?;
+
     client
         .call(methods::broadcast_tx_commit::RpcBroadcastTxCommitRequest {
-            signed_transaction: transaction.sign(&credential.private_key.as_ref().unwrap()),
+            signed_transaction: transaction.sign(private_key),
         })
         .await
         .map_err(|e| format!("Failed to submit transaction: {}", e))
