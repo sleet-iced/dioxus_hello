@@ -11,6 +11,10 @@ dioxus = { version = "0.6.0", features = ["desktop", "router"] }
 dirs = "5.0.1"
 serde = { version = "1.0.188", features = ["derive"] }
 serde_json = "1.0.107"
+near-jsonrpc-client = "0.7.0"
+near-primitives = "0.17.0"
+base64 = "0.21.4"
+toml = "0.8.2"
 
 [features]
 default = ["desktop"]
