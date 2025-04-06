@@ -56,7 +56,7 @@ async fn submit_transaction(
         "greeting": new_greeting
     });
 
-    let _action = Action::FunctionCall(Box::new(FunctionCallAction {
+    let action = Action::FunctionCall(Box::new(FunctionCallAction {
         method_name: "set_greeting".to_string(),
         args: args.to_string().into_bytes(),
         gas: 30_000_000_000_000, // 30 TGas
@@ -71,16 +71,13 @@ async fn submit_transaction(
         },
     };
 
-    let access_key_response = client.call(access_key_query).await
-        .map_err(|e| format!("Failed to fetch access key: {}", e))?;
-
+    let access_key_response = client.call(access_key_query).await.map_err(|e| format!("Failed to fetch access key: {}", e))?;
     let block_hash = access_key_response.block_hash;
-
     let access_key_view = match access_key_response.kind {
         near_jsonrpc_primitives::types::query::QueryResponseKind::AccessKey(view) => view,
         _ => return Err("Failed to get access key view".to_string()),
     };
-
+    
     let transaction = Transaction::new(
         signer_account_id,
         public_key,
