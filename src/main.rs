@@ -3,6 +3,8 @@
 use dioxus::prelude::*;
 
 mod app;
+mod account_selector;
+mod near_credentials;
 use app::MainApp as MainApp;
 
 

@@ -1,17 +1,16 @@
 use dioxus::prelude::*;
-use crate::near_credentials::{NearCredential, load_near_credentials};
+use crate::near_credentials::load_near_credentials;
 
 #[component]
 pub fn AccountSelector(network: bool) -> Element {
-    let credentials = use_memo((), |_| load_near_credentials());
-    let filtered_accounts = credentials.iter()
-        .filter(|cred| {
-            let network_name = if network { "mainnet" } else { "testnet" };
-            cred.network == network_name
-        })
-        .collect::<Vec<_>>();
-    
+    let credentials = use_signal(|| load_near_credentials());
     let selected_account = use_signal(|| None::<String>);
+    
+    let network_name = if network { "mainnet" } else { "testnet" };
+    let filtered_accounts = credentials()
+        .into_iter()
+        .filter(|cred| cred.network == network_name)
+        .collect::<Vec<_>>();
 
     rsx! {
         div { class: "AccountSelector_container",
@@ -24,7 +23,7 @@ pub fn AccountSelector(network: bool) -> Element {
                     selected: selected_account().is_none(),
                     "Select an account"
                 }
-                filtered_accounts.iter().map(|cred| {
+                filtered_accounts.into_iter().map(|cred| {
                     rsx! {
                         option {
                             key: "{cred.account_id}",

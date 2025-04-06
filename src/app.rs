@@ -15,7 +15,7 @@ pub fn MainApp() -> Element {
 
 #[component]
 pub fn Body() -> Element {
-    let network = use_signal(|| true);
+    let mut network = use_signal(|| true);
     
     rsx! {
         h1 { "Hello, Dioxus!" }
