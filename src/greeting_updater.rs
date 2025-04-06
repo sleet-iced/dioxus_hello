@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use near_jsonrpc_client::{JsonRpcClient, methods};
 use near_primitives::types::AccountId;
-use near_primitives::transaction::{Action, FunctionCallAction, Transaction, TransactionBody};
+use near_primitives::transaction::{Action, FunctionCallAction, Transaction, SignedTransaction};
 use near_crypto::SecretKey;
 use near_primitives::views::FinalExecutionOutcomeView;
 use near_crypto::{InMemorySigner, PublicKey};
@@ -80,25 +80,26 @@ async fn submit_transaction(
         .map_err(|e| format!("Failed to fetch access key: {}", e))?;
 
     let block_hash = access_key_response.block_hash;
-    if block_hash.is_none() {
-        return Err("Failed to get block hash".to_string());
-    }
+    let block_hash = block_hash.ok_or_else(|| "Failed to get block hash".to_string())?;
 
     let access_key_view = match access_key_response.kind {
         near_jsonrpc_primitives::types::query::QueryResponseKind::AccessKey(view) => view,
         _ => return Err("Failed to get access key view".to_string()),
     };
 
-    let transaction = Transaction::new(
-        signer_account_id,
+    let transaction = Transaction::V2(near_primitives::transaction::TransactionV2 {
+        signer_id: signer_account_id,
         public_key,
-        contract_account_id,
-        access_key_view.nonce + 1,
-        block_hash.unwrap(),
-        vec![action]
-    );
+        nonce: access_key_view.nonce + 1,
+        receiver_id: contract_account_id,
+        block_hash,
+        actions: vec![action],
+    });
 
-    let signed_transaction = transaction.sign(&signer);
+    let transaction_bytes = borsh::to_vec(&transaction).map_err(|e| e.to_string())?;
+    let hash = near_primitives::hash::hash(&transaction_bytes);
+    let signature = signer.sign(hash.as_ref());
+    let signed_transaction = SignedTransaction::new(signature, transaction);
 
     client
         .call(methods::broadcast_tx_commit::RpcBroadcastTxCommitRequest {
