@@ -41,10 +41,10 @@ async fn submit_transaction(
 
     let rpc_url = config["rpc_url"].as_str().unwrap();
     let client = JsonRpcClient::connect(rpc_url);
-    
+
     let contract_account_id = AccountId::from_str(contract_id)
         .map_err(|e| format!("Invalid contract ID: {}", e))?;
-    
+
     let signer_account_id = AccountId::from_str(&credential.account_id)
         .map_err(|e| format!("Invalid signer account ID: {}", e))?;
 
@@ -62,7 +62,7 @@ async fn submit_transaction(
         "greeting": new_greeting
     });
 
-    let action = Action::FunctionCall(Box::new(FunctionCallAction {
+    let _action = Action::FunctionCall(Box::new(FunctionCallAction {
         method_name: "set_greeting".to_string(),
         args: args.to_string().into_bytes(),
         gas: 30_000_000_000_000, // 30 TGas
@@ -87,14 +87,12 @@ async fn submit_transaction(
         _ => return Err("Failed to get access key view".to_string()),
     };
 
-    let transaction = Transaction::new_v1(
+    let transaction = Transaction::new(
         signer_account_id,
         public_key,
         contract_account_id,
         access_key_view.nonce + 1,
-        vec![action],
-        block_hash,
-        0 // priority_fee
+        block_hash
     );
 
     let transaction_bytes = borsh::to_vec(&transaction).map_err(|e| e.to_string())?;
@@ -132,7 +130,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
             network: network_name.to_string(),
             contract_id: contract_id.to_string(),
             method_name: "set_greeting".to_string(),
-            args: format!("{{\"greeting\":\"{}\"}}", new_greeting.get_untracked()),
+            args: format!("{{\"greeting\":\"{}\"}}", new_greeting()),
             gas: "30 TGas".to_string(),
             deposit: "0 NEAR".to_string(),
         }));
@@ -146,7 +144,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                 input {
                     class: "greeting-input",
                     placeholder: "Enter new greeting",
-                    value: new_greeting.get_untracked()
+                    value: new_greeting(),
                     oninput: move |evt| {
                         new_greeting.set(evt.value().to_string());
                         update_preview();
@@ -154,7 +152,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                 }
                 button {
                     class: "update-button",
-                    disabled: new_greeting.get().is_empty() || selected_account.is_none()
+                    disabled: new_greeting().is_empty() || selected_account.is_none(),
                     onclick: move |_| {
                         if let Some(account) = selected_account.as_ref() {
                             transaction_status.set(Some("Preparing transaction...".to_string()));
@@ -168,13 +166,13 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                                     .clone()
                             };
                             let contract_id = config["contract_id"].as_str().unwrap();
-                            
+
                             to_owned![new_greeting, transaction_status];
                             spawn(async move {
                                 match submit_transaction(
                                     network,
                                     contract_id,
-                                    &new_greeting.get_untracked(),
+                                    &new_greeting(),
                                     account,
                                 ).await {
                                     Ok(_) => {
@@ -194,14 +192,14 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
             }
 
             div { class: "transaction-preview",
-                if let Some(status) = transaction_status.get() {
+                if let Some(status) = transaction_status().as_ref() {
                     div { class: "preview-item status",
                         span { class: "label", "Status: " }
                         span { class: "value", "{status}" }
                     }
                 }
                 h3 { "Transaction Preview" }
-                if let Some(preview) = transaction_preview.get() {
+                if let Some(preview) = transaction_preview() {
                     div { class: "preview-content",
                         div { class: "preview-item",
                             span { class: "label", "Network: " }
