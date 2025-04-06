@@ -11,6 +11,7 @@ use std::str::FromStr;
 use serde_json::json;
 use crate::near_credentials::NearCredential;
 use std::sync::LazyLock;
+use crate::account_selector::AccountSelector;
 
 const GREETING_UPDATER_CSS: Asset = asset!("src/css/greeting_updater.css");
 
@@ -124,6 +125,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
         link { rel: "stylesheet", href: GREETING_UPDATER_CSS }
         div { class: "greeting-updater",
             h2 { "Update Greeting" }
+            AccountSelector { network: network }
             div { class: "input-group",
                 input {
                     class: "greeting-input",
@@ -138,9 +140,8 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                     class: "update-button",
                     disabled: new_greeting().is_empty() || selected_account.is_none(),
                     onclick: move |_| {
-                        let selected_account = selected_account.clone();
                         let account = selected_account.clone();
-                        if let Some(account) = account.as_ref() {
+                        if let Some(account) = account {
                             transaction_status.set(Some("Preparing transaction...".to_string()));
                             let config = if network {
                                 toml::from_str::<toml::Value>(include_str!("network_config.toml"))
@@ -149,23 +150,23 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                                 toml::from_str::<toml::Value>(include_str!("network_config.toml"))
                                     .unwrap()["testnet"].clone()
                             };
-                            let contract_id = config["contract_id"].as_str().unwrap().to_string();
+                            let contract_id = config["contract_id"].as_str().unwrap();
 
                             to_owned![new_greeting, transaction_status];
-                            let cloned_account = account.clone();
                             spawn(async move {
-                            match submit_transaction(
-                                network,
-                                &new_greeting(),
-                                &cloned_account,
-                            ).await {
-                                Ok(_) => {
-                                    transaction_status.set(Some("Transaction successful!".to_string()));
+                                match submit_transaction(
+                                    network,
+                                    contract_id,
+                                    &new_greeting(),
+                                    &account,
+                                ).await {
+                                    Ok(_) => {
+                                        transaction_status.set(Some("Transaction successful!".to_string()));
+                                    }
+                                    Err(e) => {
+                                        transaction_status.set(Some(format!("Transaction failed: {}", e)));
+                                    }
                                 }
-                                Err(e) => {
-                                    transaction_status.set(Some(format!("Transaction failed: {}", e)));
-                                }
-                            }
                             });
                         } else {
                             transaction_status.set(Some("Please select an account first".to_string()));
