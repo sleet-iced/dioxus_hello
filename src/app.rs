@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
 use crate::account_selector::AccountSelector;
 use crate::greeting_viewer::GreetingViewer;
+use crate::greeting_updater::GreetingUpdater;
 
 const APP_CSS: Asset = asset!("src/css/app.css");
 
@@ -74,8 +75,13 @@ pub fn GreetingViewerComponent(network: bool) -> Element {
 #[component]
 pub fn GreetingUpdaterComponent(network: bool) -> Element {
     rsx! {
-        AccountSelector {
-            network: network
+        div {
+            AccountSelector {
+                network: network
+            }
+            GreetingUpdater {
+                network: network
+            }
         }
     }
 }

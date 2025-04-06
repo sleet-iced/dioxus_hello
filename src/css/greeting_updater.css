@@ -1,0 +1,81 @@
+.greeting-updater {
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+}
+
+.greeting-updater h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.greeting-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+.update-button {
+    padding: 10px 20px;
+    background-color: #0052cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.update-button:hover {
+    background-color: #0047b3;
+}
+
+.update-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.transaction-preview {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.transaction-preview h3 {
+    color: #555;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.preview-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.preview-item {
+    display: flex;
+    gap: 10px;
+    font-size: 0.9em;
+}
+
+.preview-item .label {
+    color: #666;
+    min-width: 100px;
+}
+
+.preview-item .value {
+    color: #333;
+    font-family: monospace;
+    word-break: break-all;
+}
