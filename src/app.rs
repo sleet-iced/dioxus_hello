@@ -19,7 +19,6 @@ pub fn Body() -> Element {
     let mut network = use_signal(|| true);
     
     rsx! {
-        
         h1 { "Hello, Dioxus!" }
         p { "🧬 A HELLO DIOXUS PROJECT BY SLEET" }
         p { "FOR INTERACTING WITH A HELLO CONRTACT ON NEAR" }
@@ -27,14 +26,22 @@ pub fn Body() -> Element {
             onchange: move |val| network.set(val)
         }
         
-        GreetingViewer {
+        GreetingViewerComponent {
             network: network()
         }
 
         AccountSelector {
             network: network()
         }
+    }
+}
 
+#[component]
+pub fn GreetingViewerComponent(network: bool) -> Element {
+    rsx! {
+        GreetingViewer {
+            network: network
+        }
     }
 }
 
