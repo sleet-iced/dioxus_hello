@@ -2,12 +2,8 @@ use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use near_jsonrpc_client::JsonRpcClient;
 use near_jsonrpc_primitives::types::query::QueryResponseKind;
-use near_jsonrpc_primitives::types::transactions::TransactionInfo;
 use near_primitives::transaction::{Action, FunctionCallAction, Transaction, SignedTransaction};
 use near_primitives::types::{AccountId, BlockReference, Finality};
-use near_primitives::borsh::BorshSerialize;
-use near_primitives::hash::CryptoHash;
-use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 use crate::near_credentials::NearCredential;
 use std::str::FromStr;
 use near_crypto;
@@ -28,7 +24,7 @@ pub struct TransactionPreview {
 pub fn GreetingUpdater(cx: Scope, network: bool, selected_account: Option<NearCredential>) -> Element {
     let mut new_greeting = use_signal(|| String::new());
     let mut transaction_preview = use_signal(|| None::<TransactionPreview>);
-let mut transaction_status = use_signal(|| None::<String>);
+    let mut transaction_status = use_signal(|| None::<String>);
 
     let mut update_preview = move || {
         let network_name = if network { "mainnet" } else { "testnet" };
@@ -46,7 +42,7 @@ let mut transaction_status = use_signal(|| None::<String>);
             network: network_name.to_string(),
             contract_id: contract_id.to_string(),
             method_name: "set_greeting".to_string(),
-            args: format!("{{\"greeting\":\"{}\"}}", new_greeting()),
+            args: format!("{{\"greeting\": \"{}\"}}", new_greeting()),
             gas: "30 TGas".to_string(),
             deposit: "0 NEAR".to_string(),
         }));
@@ -91,7 +87,7 @@ let mut transaction_status = use_signal(|| None::<String>);
                                     .unwrap()
                             };
 
-                            let args = format!("{{\"\": \"{}\"}}", new_greeting());
+                            let args = format!("{{\"greeting\": \"{}\"}}", new_greeting());
                             transaction_status.set(Some("Preparing transaction...".to_string()));
 
                             let signer_id = AccountId::from_str(&account.account_id).unwrap();

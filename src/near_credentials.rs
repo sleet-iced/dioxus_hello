@@ -1,7 +1,7 @@
 use std::fs;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct NearCredential {
     #[serde(rename = "accountId")]
     pub account_id: String,
