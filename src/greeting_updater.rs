@@ -125,7 +125,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
         link { rel: "stylesheet", href: GREETING_UPDATER_CSS }
         div { class: "greeting-updater",
             h2 { "Update Greeting" }
-            AccountSelector { network: network }
+            AccountSelector { network: network, onselect: move |account| selected_account = Some(account) }
             div { class: "input-group",
                 input {
                     class: "greeting-input",

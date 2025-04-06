@@ -5,7 +5,7 @@ const ACCOUNT_SELECTOR_CSS: Asset = asset!("src/css/account_selector.css");
 
 
 #[component]
-pub fn AccountSelector(network: bool) -> Element {
+pub fn AccountSelector(network: bool, onselect: EventHandler<String>) -> Element {
     let credentials = use_signal(|| load_near_credentials());
     let mut selected_account = use_signal(|| None::<String>);
     
@@ -20,7 +20,11 @@ pub fn AccountSelector(network: bool) -> Element {
         div { class: "AccountSelector_container",
             select {
                 class: "AccountSelector_select",
-                onchange: move |evt| selected_account.set(Some(evt.value().clone())),
+                onchange: move |evt| {
+                    let account_id = evt.value().clone();
+                    selected_account.set(Some(account_id.clone()));
+                    onselect.call(account_id);
+                },
                 option { 
                     value: "",
                     disabled: true,
