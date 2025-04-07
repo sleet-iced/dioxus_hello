@@ -153,7 +153,7 @@ pub fn GreetingUpdater(network: bool, selected_account: Option<NearCredential>) 
                                 toml::from_str::<toml::Value>(include_str!("network_config.toml"))
                                     .unwrap()["testnet"].clone()
                             };
-                            let contract_id = config["contract_id"].as_str().unwrap();
+                            let _contract_id = config["contract_id"].as_str().unwrap();
 
                             to_owned![new_greeting, transaction_status];
                             spawn(async move {
