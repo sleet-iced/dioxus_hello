@@ -3,6 +3,7 @@ use crate::greeting_viewer::GreetingViewer;
 use crate::greeting_updater::GreetingUpdater;
 
 const APP_CSS: Asset = asset!("src/css/app.css");
+const SLEET_ICON: Asset = asset!("src/img/sleet_icon.svg");
 
 
 
@@ -40,6 +41,7 @@ pub fn Body() -> Element {
     let mut network = use_signal(|| true);
 
     rsx! {
+        img { class: "sleet-icon", src: SLEET_ICON }
         h1 { "hello.sleet.near" }
         p { "🧬 A HELLO DIOXUS PROJECT BY SLEET" }
         p { "FOR INTERACTING WITH A HELLO CONRTACT ON NEAR" }
