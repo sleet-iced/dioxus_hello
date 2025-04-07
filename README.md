@@ -1,4 +1,5 @@
 # dioxus_hello
+![img](DOCS/screenshot.png)
 🧬 a hello dioxus project by sleet for interacting with a hello conrtact on near 
 
 ----
@@ -32,7 +33,7 @@ cargo test
 cargo clean
 ```
 
----
+
 
 
 
