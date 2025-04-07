@@ -38,15 +38,15 @@ pub fn NetworkToggle(onchange: EventHandler<bool>) -> Element {
 #[component]
 pub fn Body() -> Element {
     let mut network = use_signal(|| true);
-    
+
     rsx! {
-        h1 { "Hello, Dioxus!" }
+        h1 { "hello.sleet.near" }
         p { "🧬 A HELLO DIOXUS PROJECT BY SLEET" }
         p { "FOR INTERACTING WITH A HELLO CONRTACT ON NEAR" }
         NetworkToggle {
             onchange: move |val| network.set(val)
         }
-        
+
         GreetingViewerComponent {
             network: network()
         }
@@ -81,8 +81,3 @@ pub fn GreetingUpdaterComponent(network: bool) -> Element {
         }
     }
 }
-
-
-
-
-
