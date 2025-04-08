@@ -22,7 +22,7 @@ brew install android-platform-tools
 ```
 
 4. Update your Cargo.toml:
-```toml:/Volumes/DEV/DEV_TEST/dioxus_hello/Cargo.toml
+```toml
 [lib]
 crate-type = ["cdylib"]
 
