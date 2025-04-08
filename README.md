@@ -12,6 +12,10 @@ serve
 dx serve # the default platform is desktop
 # dx serve --platform web
 dx serve --platform desktop
+
+# mobile testing
+dx serve --platform android
+dx serve --platform ios
 ```
 
 bundle
