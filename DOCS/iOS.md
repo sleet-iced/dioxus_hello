@@ -30,7 +30,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 objc = "0.2.7"
 ```
 
-``rs
+```rs
 #[cfg(target_os = "ios")]
 #[no_mangle]
 pub extern "C" fn start_app() {
